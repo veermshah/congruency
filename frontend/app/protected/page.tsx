@@ -2,37 +2,48 @@ import FetchDataSteps from "@/components/tutorial/fetch-data-steps";
 import { createClient } from "@/utils/supabase/server";
 import { InfoIcon } from "lucide-react";
 import { redirect } from "next/navigation";
+import { IoCloudUploadSharp } from "react-icons/io5";
+import { RiAiGenerate } from "react-icons/ri";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default async function ProtectedPage() {
-  const supabase = await createClient();
+    const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
-  if (!user) {
-    return redirect("/sign-in");
-  }
+    console.log("User Details:", JSON.stringify(user, null, 2));
 
-  return (
-    <div className="flex-1 w-full flex flex-col gap-12">
-      <div className="w-full">
-        <div className="bg-accent text-sm p-3 px-5 rounded-md text-foreground flex gap-3 items-center">
-          <InfoIcon size="16" strokeWidth={2} />
-          This is a protected page that you can only see as an authenticated
-          user
+    if (!user) {
+        return redirect("/sign-in");
+    }
+    // User Details: JSON.stringify(user, null, 2)
+
+    return (
+        <div className="absolute left-0 top-20">
+            <div className="mt-5 mx-16">
+                <div className="text-4xl text-teal-400 font-bold mb-5">
+                    Contracts
+                </div>
+                <div className="flex items-center gap-16">
+                    <Link
+                        href="/protected/upload"
+                        className="flex items-center gap-3 text-2xl rounded-3xl hover:text-teal-400 border-black border-1 shadow-2xl px-8 py-5 hover:scale-105 active:scale-90 duration-500 cursor-pointer"
+                    >
+                        <IoCloudUploadSharp size={40} />
+                        Upload
+                    </Link>
+                    <Link
+                        href="/protected/ai"
+                        className="flex items-center gap-3 text-2xl rounded-3xl hover:text-teal-400 border-black border-1 shadow-2xl px-8 py-5 hover:scale-105 active:scale-90 duration-500 cursor-pointer"
+                    >
+                        <RiAiGenerate size={40} />
+                        Create with AI
+                    </Link>
+                </div>
+            </div>
         </div>
-      </div>
-      <div className="flex flex-col gap-2 items-start">
-        <h2 className="font-bold text-2xl mb-4">Your user details</h2>
-        <pre className="text-xs font-mono p-3 rounded border max-h-32 overflow-auto">
-          {JSON.stringify(user, null, 2)}
-        </pre>
-      </div>
-      <div>
-        <h2 className="font-bold text-2xl mb-4">Next steps</h2>
-        <FetchDataSteps />
-      </div>
-    </div>
-  );
+    );
 }
