@@ -33,14 +33,14 @@ export default async function AuthButton() {
         );
     }
     return user ? (
-        <div className="flex items-center gap-4 text-2xl text-teal-400 font-bold">
+        <div className="flex items-center gap-6 text-2xl text-teal-400 font-bold">
             Hey, {user.email}!
             <form action={signOutAction}>
                 <button
                     type="submit"
                     className="text-2xl hover:font-bold hover:text-teal-400 text-black duration-500"
                 >
-                    Sign out
+                    Sign Out
                 </button>
             </form>
         </div>
