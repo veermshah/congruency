@@ -28,7 +28,6 @@ export default function DocumentBrowser() {
             setLoading(true);
             setError("");
 
-            // Get current user
             const {
                 data: { user },
                 error: userError,
@@ -40,7 +39,6 @@ export default function DocumentBrowser() {
                 return;
             }
 
-            // List files from user's folder
             const { data, error: storageError } = await supabase.storage
                 .from("contracts")
                 .list(user.id);
@@ -102,7 +100,6 @@ export default function DocumentBrowser() {
 
             if (error) throw error;
 
-            // Create download link
             const url = URL.createObjectURL(data);
             const link = document.createElement("a");
             link.href = url;
@@ -135,7 +132,7 @@ export default function DocumentBrowser() {
 
             if (error) throw error;
 
-            await loadUserFiles(); // Reload the file list
+            await loadUserFiles();
         } catch (err) {
             setError(
                 err instanceof Error ? err.message : "Error deleting file"
@@ -148,7 +145,7 @@ export default function DocumentBrowser() {
     );
 
     return (
-        <div className="fixed inset-0 top-16 p-8">
+        <div className="fixed inset-0 top-16 p-8 overflow-hidden">
             <div className="text-4xl text-teal-400 font-bold mb-6">
                 Your Documents
             </div>
@@ -171,7 +168,7 @@ export default function DocumentBrowser() {
             ) : files.length === 0 ? (
                 <div>No documents found. Upload some files to get started.</div>
             ) : (
-                <div className="space-y-4">
+                <div className="overflow-y-auto h-[calc(100vh-250px)] space-y-4">
                     {filteredFiles.map((file) => (
                         <div
                             key={file.id}
