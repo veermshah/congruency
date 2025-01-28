@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { RiChatSearchLine } from "react-icons/ri";
 
 interface FileObject {
     name: string;
@@ -16,11 +17,11 @@ interface FileObject {
 }
 
 export default function DocumentBrowser() {
+    const router = useRouter();
     const [files, setFiles] = useState<FileObject[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const router = useRouter();
     const supabase = createClient();
 
     const loadUserFiles = async () => {
@@ -140,14 +141,58 @@ export default function DocumentBrowser() {
         }
     };
 
+    const handleAnalyze = async (fileName: string) => {
+        try {
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const filePath = `${user.id}/${fileName}`;
+            const { data: fileData, error } = await supabase.storage
+                .from("contracts")
+                .download(filePath);
+
+            if (error) throw error;
+
+            const fileContent = await fileData.text(); // Or use .arrayBuffer() for binary files
+
+            const response = await fetch("http://localhost:5000/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ fileName, content: fileContent }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to analyze the document.");
+            }
+
+            const result = await response.json();
+            alert(`Analysis result: ${result.message}`);
+        } catch (err) {
+            setError(
+                err instanceof Error ? err.message : "Error analyzing file"
+            );
+        }
+    };
+
     const filteredFiles = files.filter((file) =>
         file.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
         <div className="fixed inset-0 top-16 p-8 overflow-hidden">
-            <div className="text-4xl text-teal-400 font-bold mb-6">
-                Your Documents
+            <div className="flex flex-row items-center justify-between mb-8">
+                <div className="text-4xl text-teal-400 font-bold mb-6">
+                    Your Documents
+                </div>
+                <RiChatSearchLine
+                    onClick={() => router.push("/protected/search")}
+                    size="50"
+                    className="hover:text-teal-400 duration-100 hover:scale-105 font-bold active:scale-95 cursor-pointer"
+                />
             </div>
 
             {/* Search bar */}
@@ -193,6 +238,12 @@ export default function DocumentBrowser() {
                                     className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
                                 >
                                     Delete
+                                </button>
+                                <button
+                                    onClick={() => handleAnalyze(file.name)}
+                                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+                                >
+                                    Analyze
                                 </button>
                             </div>
                         </div>
